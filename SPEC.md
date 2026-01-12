@@ -35,9 +35,9 @@ Instead of a static list, the home screen presents a prioritized "Deck" of peopl
 * **Visual Interface:**
     * Card-based layout (Swipeable or vertically scrollable).
     * **Health Rings:** Avatar surrounded by a color-coded ring indicating relationship status.
-        * 🟢 **Green:** Recently contacted.
-        * 🟡 **Yellow:** Approaching due date.
-        * 🔴 **Red:** Overdue.
+	* 🟢 **Light Green (Mint):** Recently contacted.
+        * 🟡 **Light Yellow (Cream):** Approaching due date.
+        * 🔴 **Light Red (Rose):** Overdue.
 * **Card Actions:**
     * **Nudge:** Opens system share sheet (WhatsApp, iMessage, Email).
     * **Log:** Opens the Interaction Editor to record a conversation.
@@ -133,3 +133,40 @@ CREATE TABLE interactions (
     is_dirty BOOLEAN DEFAULT 0,
     FOREIGN KEY(contact_id) REFERENCES contacts(id)
 );
+
+## 5. UI/UX Specifications (The "Delight" Layer)
+
+To achieve the "Delightful" requirement, the app must move away from standard system table views.
+
+### 5.1 Animations
+* **Hero Transitions:** When tapping a contact card in the Daily Deck, the avatar should "fly" (Hero transition) to the top of the detail screen.
+* **Completion Celebration:** When the "Daily Deck" is cleared (0 tasks remaining), trigger a subtle particle effect (e.g., confetti) or a specific "All Done" illustration.
+* **Swipe Interactions:**
+    * **Swipe Right:** Quick Log (Mark as "Just said hi").
+    * **Swipe Left:** Snooze/Dismiss.
+
+### 5.2 Haptics
+* **Completion:** Trigger `HapticFeedback.mediumImpact()` when marking an interaction as done.
+* **Selection:** Trigger `HapticFeedback.selectionClick()` when scrolling date pickers or snapping carousels.
+
+### 5.3 Empty States
+* **Rule:** Never show a blank white screen.
+* **No Contacts:** Show a primary action button "Import from Phone" accompanied by an illustration.
+* **No Tasks:** Show a "Relax, you're a good friend!" message with a calming graphic (e.g., a plant or coffee cup).
+
+---
+
+## 6. Future Roadmap (Post-MVP)
+
+### 6.1 Backend Synchronization
+* **Goal:** Enable multi-device support.
+* **Strategy:** Implement a backend (Go/Node) that accepts "Dirty" records via REST/gRPC.
+* **Conflict Resolution:** Last-Write-Wins (LWW) based on the `updated_at` timestamp.
+
+### 6.2 Smart Enrichment
+* **Goal:** Reduce manual data entry.
+* **Implementation:** Fetch public information (e.g., Twitter/LinkedIn avatar and bio) based on the contact's email address (requires external API integration).
+
+### 6.3 Gift Tracking
+* **Goal:** Solve the "What do I get them?" problem.
+* **Implementation:** A dedicated "Gifts" tab in the user profile to log ideas throughout the year and mark them as "Given" with a date.

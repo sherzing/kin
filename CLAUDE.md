@@ -55,7 +55,7 @@ dart format .
 ### Core Data Models
 
 - **contacts:** People to stay in touch with (name, avatar, cadence_days, last_contacted_at)
-- **circles:** Tags/groups for organizing contacts (e.g., #family, #college)
+- **circles:** Tags/groups for organizing contacts (e.g., #family, #college) with optional color_hex
 - **contact_circles:** Junction table for many-to-many contact-circle relationships
 - **interactions:** Logged conversations/meetings with contacts (type, content as Markdown, happened_at)
 
