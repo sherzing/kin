@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Use named parameters for data class constructors
+          named_parameters: true
+          # Generate .g.dart files in the same directory as source
+          generate_values_in_copy_with: true
