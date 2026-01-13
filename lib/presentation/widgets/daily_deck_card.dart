@@ -42,18 +42,21 @@ class DailyDeckCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Avatar with health ring
-              HealthRing(
-                contact: contact,
-                size: 96,
-                strokeWidth: 4,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  child: Text(
-                    _getInitials(),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: theme.colorScheme.onPrimaryContainer,
+              // Avatar with health ring and Hero transition
+              Hero(
+                tag: 'contact-avatar-${contact.id}',
+                child: HealthRing(
+                  contact: contact,
+                  size: 96,
+                  strokeWidth: 4,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Text(
+                      _getInitials(),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ),
                 ),

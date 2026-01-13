@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers/providers.dart';
+import '../../core/services/haptic_service.dart';
 import '../../data/database/database.dart';
 import '../../data/database/tables/interactions.dart';
 import '../widgets/widgets.dart';
@@ -65,11 +66,13 @@ class _InteractionEditorScreenState
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date != null) {
+      HapticService.selectionClick();
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_happenedAt),
       );
       if (time != null) {
+        HapticService.selectionClick();
         setState(() {
           _happenedAt = DateTime(
             date.year,
@@ -113,6 +116,9 @@ class _InteractionEditorScreenState
           happenedAt: _happenedAt,
         );
       }
+
+      // Haptic feedback on successful save
+      HapticService.mediumImpact();
 
       if (mounted) {
         context.pop();

@@ -18,7 +18,8 @@ void main() {
 
         expect(find.text('Contacts'), findsOneWidget);
         expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        // FAB has add icon, empty state button also has add icon
+        expect(find.byIcon(Icons.add), findsAtLeastNWidgets(1));
       });
     });
 
@@ -26,8 +27,9 @@ void main() {
       await testWithDatabase(tester, (db) async {
         await pumpWidgetWithDb(tester, db, const ContactListScreen());
 
-        expect(find.text('No contacts yet'), findsOneWidget);
-        expect(find.text('Tap + to add your first contact'), findsOneWidget);
+        // Updated empty state text
+        expect(find.text('Start building your network'), findsOneWidget);
+        expect(find.textContaining('Add the people you want'), findsOneWidget);
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
       });
     });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers/providers.dart';
+import '../../core/services/haptic_service.dart';
 import '../../data/database/database.dart';
 import 'daily_deck_card.dart';
 
@@ -23,33 +24,79 @@ class SwipeableDeckCard extends ConsumerStatefulWidget {
   ConsumerState<SwipeableDeckCard> createState() => _SwipeableDeckCardState();
 }
 
-class _SwipeableDeckCardState extends ConsumerState<SwipeableDeckCard> {
+class _SwipeableDeckCardState extends ConsumerState<SwipeableDeckCard>
+    with SingleTickerProviderStateMixin {
   bool _isProcessing = false;
+  bool _isDismissed = false;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Dismissible(
-      key: Key('deck-card-${widget.contact.id}'),
-      background: _buildQuickLogBackground(theme),
-      secondaryBackground: _buildSnoozeBackground(theme),
-      confirmDismiss: (direction) async {
-        if (_isProcessing) return false;
-
-        if (direction == DismissDirection.startToEnd) {
-          // Swipe right: Quick log
-          await _handleQuickLog();
-          return true; // Remove card
-        } else {
-          // Swipe left: Show snooze dialog
-          final snoozed = await _showSnoozeDialog();
-          return snoozed; // Remove if snoozed
-        }
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fadeAnimation.value,
+          child: Transform.scale(
+            scale: 0.9 + (_fadeAnimation.value * 0.1),
+            child: child,
+          ),
+        );
       },
-      child: DailyDeckCard(
-        contact: widget.contact,
-        onTap: widget.onTap,
+      child: Dismissible(
+        key: Key('deck-card-${widget.contact.id}'),
+        background: _buildQuickLogBackground(theme),
+        secondaryBackground: _buildSnoozeBackground(theme),
+        // Spring-like animation with longer duration
+        movementDuration: const Duration(milliseconds: 300),
+        dismissThresholds: const {
+          DismissDirection.startToEnd: 0.3,
+          DismissDirection.endToStart: 0.3,
+        },
+        confirmDismiss: (direction) async {
+          if (_isProcessing || _isDismissed) return false;
+
+          if (direction == DismissDirection.startToEnd) {
+            // Swipe right: Quick log
+            await _handleQuickLog();
+            _isDismissed = true;
+            await _fadeController.forward();
+            return true; // Remove card
+          } else {
+            // Swipe left: Show snooze dialog
+            final snoozed = await _showSnoozeDialog();
+            if (snoozed) {
+              _isDismissed = true;
+              await _fadeController.forward();
+            }
+            return snoozed; // Remove if snoozed
+          }
+        },
+        child: DailyDeckCard(
+          contact: widget.contact,
+          onTap: widget.onTap,
+        ),
       ),
     );
   }
@@ -116,6 +163,9 @@ class _SwipeableDeckCardState extends ConsumerState<SwipeableDeckCard> {
       final notifier = ref.read(dailyDeckNotifierProvider.notifier);
       await notifier.quickLog(widget.contact.id);
 
+      // Haptic feedback on successful quick log
+      HapticService.mediumImpact();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -168,6 +218,9 @@ class _SwipeableDeckCardState extends ConsumerState<SwipeableDeckCard> {
     try {
       final notifier = ref.read(dailyDeckNotifierProvider.notifier);
       await notifier.snoozeForDays(widget.contact.id, selectedDays);
+
+      // Haptic feedback on successful snooze
+      HapticService.selectionClick();
 
       if (mounted) {
         final preset = presets.firstWhere(
@@ -271,6 +324,7 @@ class _SnoozeSheet extends StatelessWidget {
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (picked != null && context.mounted) {
+                  HapticService.selectionClick();
                   final days = picked.difference(DateTime.now()).inDays;
                   Navigator.of(context).pop(days);
                 }

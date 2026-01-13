@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers/providers.dart';
 import '../../data/database/database.dart';
 import '../../data/database/tables/interactions.dart';
+import '../widgets/widgets.dart';
 
 /// Screen displaying interaction history for a contact.
 class InteractionListScreen extends ConsumerWidget {
@@ -31,7 +32,10 @@ class InteractionListScreen extends ConsumerWidget {
       body: interactionsAsync.when(
         data: (interactions) {
           if (interactions.isEmpty) {
-            return const _EmptyInteractionsView();
+            return _EmptyInteractionsView(
+              onLogInteraction: () =>
+                  context.push('/contacts/$contactId/interactions/new'),
+            );
           }
           return _InteractionTimeline(
             interactions: interactions,
@@ -53,35 +57,13 @@ class InteractionListScreen extends ConsumerWidget {
 }
 
 class _EmptyInteractionsView extends StatelessWidget {
-  const _EmptyInteractionsView();
+  const _EmptyInteractionsView({this.onLogInteraction});
+
+  final VoidCallback? onLogInteraction;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.history,
-            size: 64,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No interactions yet',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap the button below to log your first interaction',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    return NoInteractionsIllustration(onLogInteraction: onLogInteraction);
   }
 }
 

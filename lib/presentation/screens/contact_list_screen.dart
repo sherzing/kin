@@ -48,7 +48,9 @@ class ContactListScreen extends ConsumerWidget {
             child: contactsAsync.when(
               data: (contacts) {
                 if (contacts.isEmpty) {
-                  return const _EmptyContactsView();
+                  return _EmptyContactsView(
+                    onAddContact: () => context.push('/contacts/new'),
+                  );
                 }
                 return _FilteredContactList(
                   allContacts: contacts,
@@ -175,34 +177,13 @@ class _FilteredContactList extends ConsumerWidget {
 }
 
 class _EmptyContactsView extends StatelessWidget {
-  const _EmptyContactsView();
+  const _EmptyContactsView({this.onAddContact});
+
+  final VoidCallback? onAddContact;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.people_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No contacts yet',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap + to add your first contact',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-          ),
-        ],
-      ),
-    );
+    return NoContactsIllustration(onAddContact: onAddContact);
   }
 }
 
@@ -257,16 +238,19 @@ class _ContactAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HealthRing(
-      contact: contact,
-      size: 48,
-      strokeWidth: 3,
-      child: CircleAvatar(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        child: Text(
-          _getInitials(),
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+    return Hero(
+      tag: 'contact-avatar-${contact.id}',
+      child: HealthRing(
+        contact: contact,
+        size: 48,
+        strokeWidth: 3,
+        child: CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Text(
+            _getInitials(),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers/providers.dart';
+import '../../core/services/haptic_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/database/database.dart';
 
@@ -107,6 +108,7 @@ class _ContactDetailView extends ConsumerWidget {
     switch (action) {
       case 'mark_contacted':
         await ref.read(contactNotifierProvider.notifier).markContacted(contact.id);
+        HapticService.mediumImpact();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Marked as contacted')),
@@ -121,6 +123,7 @@ class _ContactDetailView extends ConsumerWidget {
           lastDate: DateTime.now().add(const Duration(days: 365)),
         );
         if (date != null) {
+          HapticService.selectionClick();
           await ref.read(contactNotifierProvider.notifier).snooze(contact.id, date);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -198,20 +201,23 @@ class _LargeContactAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final healthColor = _getHealthColor();
 
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: healthColor, width: 4),
-      ),
-      child: CircleAvatar(
-        radius: 48,
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        child: Text(
-          _getInitials(),
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+    return Hero(
+      tag: 'contact-avatar-${contact.id}',
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: healthColor, width: 4),
+        ),
+        child: CircleAvatar(
+          radius: 48,
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Text(
+            _getInitials(),
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+          ),
         ),
       ),
     );
