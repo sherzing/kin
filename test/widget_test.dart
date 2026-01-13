@@ -12,29 +12,36 @@ void main() {
   });
 
   testWidgets('App renders Daily Deck as home screen', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: createTestProviderOverrides(),
-        child: const KinApp(),
-      ),
-    );
+    await testWithDatabase(tester, (db) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: createTestProviderOverridesWithDb(db),
+          child: const KinApp(),
+        ),
+      );
+      await tester.pump();
 
-    expect(find.text('Daily Deck'), findsOneWidget);
-    expect(find.text('Your daily contacts will appear here'), findsOneWidget);
+      expect(find.text('Daily Deck'), findsOneWidget);
+      // Now shows empty state since no contacts are due
+      expect(find.text("You're all caught up!"), findsOneWidget);
+    });
   });
 
   testWidgets('App has bottom navigation bar with 3 tabs', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: createTestProviderOverrides(),
-        child: const KinApp(),
-      ),
-    );
+    await testWithDatabase(tester, (db) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: createTestProviderOverridesWithDb(db),
+          child: const KinApp(),
+        ),
+      );
+      await tester.pump();
 
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Contacts'), findsOneWidget);
-    expect(find.text('Search'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Contacts'), findsOneWidget);
+      expect(find.text('Search'), findsOneWidget);
+    });
   });
 
   testWidgets('Bottom nav navigates to Contacts tab', (WidgetTester tester) async {
@@ -45,6 +52,7 @@ void main() {
           child: const KinApp(),
         ),
       );
+      await tester.pump();
 
       // Tap on Contacts tab
       await tester.tap(find.text('Contacts'));
@@ -57,30 +65,36 @@ void main() {
   });
 
   testWidgets('Bottom nav navigates to Search tab', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: createTestProviderOverrides(),
-        child: const KinApp(),
-      ),
-    );
+    await testWithDatabase(tester, (db) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: createTestProviderOverridesWithDb(db),
+          child: const KinApp(),
+        ),
+      );
+      await tester.pump();
 
-    // Tap on Search tab
-    await tester.tap(find.text('Search'));
-    await tester.pumpAndSettle();
+      // Tap on Search tab
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Search for contacts and interactions'), findsOneWidget);
+      expect(find.text('Search for contacts and interactions'), findsOneWidget);
+    });
   });
 
   testWidgets('App uses MaterialApp.router with theme', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: createTestProviderOverrides(),
-        child: const KinApp(),
-      ),
-    );
+    await testWithDatabase(tester, (db) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: createTestProviderOverridesWithDb(db),
+          child: const KinApp(),
+        ),
+      );
+      await tester.pump();
 
-    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
-    expect(materialApp.routerConfig, isNotNull);
-    expect(materialApp.theme, isNotNull);
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+      expect(materialApp.routerConfig, isNotNull);
+      expect(materialApp.theme, isNotNull);
+    });
   });
 }

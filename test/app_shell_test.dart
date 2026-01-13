@@ -15,50 +15,68 @@ void main() {
 
   group('App Shell', () {
     testWidgets('renders with bottom navigation', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(overrides: createTestProviderOverrides(), child: const KinApp()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: createTestProviderOverridesWithDb(db),
+            child: const KinApp(),
+          ),
+        );
+        await tester.pump();
 
-      expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(NavigationDestination), findsNWidgets(3));
+        expect(find.byType(NavigationBar), findsOneWidget);
+        expect(find.byType(NavigationDestination), findsNWidgets(3));
+      });
     });
 
     testWidgets('Home tab is selected by default', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(overrides: createTestProviderOverrides(), child: const KinApp()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: createTestProviderOverridesWithDb(db),
+            child: const KinApp(),
+          ),
+        );
+        await tester.pump();
 
-      final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
-      expect(navBar.selectedIndex, equals(0));
+        final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+        expect(navBar.selectedIndex, equals(0));
+      });
     });
 
     testWidgets('navigation preserves tab state', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(overrides: createTestProviderOverrides(), child: const KinApp()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: createTestProviderOverridesWithDb(db),
+            child: const KinApp(),
+          ),
+        );
+        await tester.pump();
 
-      // Go to Search first (no StreamProvider)
-      await tester.tap(find.text('Search'));
-      await tester.pumpAndSettle();
+        // Go to Search first (no StreamProvider)
+        await tester.tap(find.text('Search'));
+        await tester.pumpAndSettle();
 
-      // Go back to Home
-      await tester.tap(find.text('Home'));
-      await tester.pumpAndSettle();
+        // Go back to Home
+        await tester.tap(find.text('Home'));
+        await tester.pumpAndSettle();
 
-      // Verify we're on Home
-      expect(find.text('Daily Deck'), findsOneWidget);
+        // Verify we're on Home
+        expect(find.text('Daily Deck'), findsOneWidget);
+      });
     });
   });
 
   group('Placeholder Screens', () {
     testWidgets('DailyDeckScreen renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: DailyDeckScreen()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const DailyDeckScreen());
 
-      expect(find.text('Daily Deck'), findsOneWidget);
-      expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.byType(AppBar), findsOneWidget);
+        expect(find.text('Daily Deck'), findsOneWidget);
+        expect(find.byType(Scaffold), findsOneWidget);
+        expect(find.byType(AppBar), findsOneWidget);
+      });
     });
 
     testWidgets('ContactListScreen renders correctly', (WidgetTester tester) async {
@@ -120,21 +138,27 @@ void main() {
 
   group('Router', () {
     testWidgets('navigates to settings outside shell', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(overrides: createTestProviderOverrides(), child: const KinApp()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: createTestProviderOverridesWithDb(db),
+            child: const KinApp(),
+          ),
+        );
+        await tester.pump();
 
-      // Find a widget that has access to the router
-      final router = tester
-          .widget<MaterialApp>(find.byType(MaterialApp))
-          .routerConfig as GoRouter;
-      router.go('/settings');
-      await tester.pumpAndSettle();
+        // Find a widget that has access to the router
+        final router = tester
+            .widget<MaterialApp>(find.byType(MaterialApp))
+            .routerConfig as GoRouter;
+        router.go('/settings');
+        await tester.pumpAndSettle();
 
-      expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('Manage Circles'), findsOneWidget);
-      // Settings is outside shell, so no bottom nav
-      expect(find.byType(NavigationBar), findsNothing);
+        expect(find.text('Settings'), findsOneWidget);
+        expect(find.text('Manage Circles'), findsOneWidget);
+        // Settings is outside shell, so no bottom nav
+        expect(find.byType(NavigationBar), findsNothing);
+      });
     });
   });
 }

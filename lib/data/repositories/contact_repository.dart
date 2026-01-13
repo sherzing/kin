@@ -155,6 +155,20 @@ class ContactRepository {
     return (await getById(id))!;
   }
 
+  /// Clear snooze for a contact.
+  Future<Contact> clearSnooze(String id) async {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    await (_db.update(_db.contacts)..where((t) => t.id.equals(id))).write(
+      ContactsCompanion(
+        snoozedUntil: const Value(null),
+        updatedAt: Value(now),
+        isDirty: const Value(true),
+      ),
+    );
+    return (await getById(id))!;
+  }
+
   /// Soft delete a contact.
   Future<void> delete(String id) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -186,6 +200,14 @@ class ContactRepository {
   }
 
   /// Watch contacts due for Daily Deck.
+  ///
+  /// Returns contacts where:
+  /// - (last_contacted_at + cadence_days) <= today, OR last_contacted_at is null
+  /// - snoozed_until is null OR snoozed_until <= now
+  /// - deleted_at is null
+  ///
+  /// Sorted by most overdue first (contacts with null last_contacted_at
+  /// are considered infinitely overdue and appear first).
   Stream<List<Contact>> watchDueContacts() {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -199,13 +221,40 @@ class ContactRepository {
           DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
       final todayTimestamp = todayStart.millisecondsSinceEpoch ~/ 1000;
 
-      return contacts.where((contact) {
+      // Filter to due contacts
+      final dueContacts = contacts.where((contact) {
         if (contact.lastContactedAt == null) return true;
         final lastContact = contact.lastContactedAt!;
         final cadenceSeconds = contact.cadenceDays * 86400;
         final dueDate = lastContact + cadenceSeconds;
         return dueDate <= todayTimestamp;
       }).toList();
+
+      // Sort by most overdue first
+      // Overdue amount = today - (last_contacted_at + cadence_days)
+      // Contacts with null last_contacted_at are treated as infinitely overdue
+      dueContacts.sort((a, b) {
+        final aOverdue = _calculateOverdueDays(a, todayTimestamp);
+        final bOverdue = _calculateOverdueDays(b, todayTimestamp);
+        return bOverdue.compareTo(aOverdue); // Descending (most overdue first)
+      });
+
+      return dueContacts;
     });
+  }
+
+  /// Calculate how many days overdue a contact is.
+  ///
+  /// Returns a large value for contacts with null last_contacted_at
+  /// (considered infinitely overdue - they should appear first).
+  int _calculateOverdueDays(Contact contact, int todayTimestamp) {
+    if (contact.lastContactedAt == null) {
+      return 999999; // Infinitely overdue
+    }
+    final lastContact = contact.lastContactedAt!;
+    final cadenceSeconds = contact.cadenceDays * 86400;
+    final dueDate = lastContact + cadenceSeconds;
+    final overdueSeconds = todayTimestamp - dueDate;
+    return overdueSeconds ~/ 86400;
   }
 }

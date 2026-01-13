@@ -56,6 +56,9 @@ dependencies:
   path: ^1.9.1
   image_picker: ^1.2.1
 
+  # URL launcher for nudge actions (phone, SMS, email)
+  url_launcher: ^6.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers/providers.dart';
-import '../../core/theme/app_colors.dart';
 import '../../data/database/database.dart';
+import '../widgets/widgets.dart';
 
 /// Provider for the currently selected circle filter.
 /// null means "All contacts", otherwise filter by the circle ID.
@@ -257,14 +257,10 @@ class _ContactAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final healthColor = _getHealthColor();
-
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: healthColor, width: 3),
-      ),
+    return HealthRing(
+      contact: contact,
+      size: 48,
+      strokeWidth: 3,
       child: CircleAvatar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         child: Text(
@@ -283,26 +279,5 @@ class _ContactAvatar extends StatelessWidget {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
     return parts.first.isNotEmpty ? parts.first[0].toUpperCase() : '?';
-  }
-
-  Color _getHealthColor() {
-    if (contact.lastContactedAt == null) {
-      return AppColors.healthRed;
-    }
-
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final lastContact = contact.lastContactedAt!;
-    final cadenceSeconds = contact.cadenceDays * 86400;
-
-    final elapsed = now - lastContact;
-    final percentage = elapsed / cadenceSeconds;
-
-    if (percentage <= 0.5) {
-      return AppColors.healthGreen;
-    } else if (percentage <= 1.0) {
-      return AppColors.healthYellow;
-    } else {
-      return AppColors.healthRed;
-    }
   }
 }
