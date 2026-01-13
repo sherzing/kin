@@ -16,6 +16,7 @@ abstract final class AppRoutes {
   static const String circles = '/circles';
   static const String search = '/search';
   static const String settings = '/settings';
+  static const String timeline = '/timeline';
 }
 
 /// Provider for the app router.
@@ -116,6 +117,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.circles,
         name: 'circles',
         builder: (context, state) => const CircleListScreen(),
+      ),
+      // Timeline view
+      GoRoute(
+        path: AppRoutes.timeline,
+        name: 'timeline',
+        builder: (context, state) => const TimelineScreen(),
       ),
       // Contact form routes (outside shell for modal-like experience)
       GoRoute(

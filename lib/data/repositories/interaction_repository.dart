@@ -12,11 +12,18 @@ class InteractionRepository {
   static const _uuid = Uuid();
 
   /// Get all non-deleted interactions.
-  Future<List<Interaction>> getAll() {
-    return (_db.select(_db.interactions)
-          ..where((t) => t.deletedAt.isNull())
-          ..orderBy([(t) => OrderingTerm.desc(t.happenedAt)]))
-        .get();
+  ///
+  /// Optionally supports pagination with [limit] and [offset].
+  Future<List<Interaction>> getAll({int? limit, int? offset}) {
+    var query = _db.select(_db.interactions)
+      ..where((t) => t.deletedAt.isNull())
+      ..orderBy([(t) => OrderingTerm.desc(t.happenedAt)]);
+
+    if (limit != null) {
+      query = query..limit(limit, offset: offset);
+    }
+
+    return query.get();
   }
 
   /// Get a single interaction by ID.

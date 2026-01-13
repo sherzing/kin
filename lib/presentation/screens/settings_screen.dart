@@ -14,6 +14,18 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         children: [
           _SettingsSection(
+            title: 'History',
+            children: [
+              ListTile(
+                leading: const Icon(Icons.timeline),
+                title: const Text('Timeline'),
+                subtitle: const Text('View all interactions chronologically'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/timeline'),
+              ),
+            ],
+          ),
+          _SettingsSection(
             title: 'Organization',
             children: [
               ListTile(

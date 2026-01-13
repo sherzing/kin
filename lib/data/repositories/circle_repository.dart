@@ -175,6 +175,15 @@ class CircleRepository {
         .watch();
   }
 
+  /// Search circles by name.
+  Future<List<Circle>> search(String query) {
+    final pattern = '%$query%';
+    return (_db.select(_db.circles)
+          ..where((t) => t.deletedAt.isNull() & t.name.like(pattern))
+          ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+        .get();
+  }
+
   /// Watch circles for a specific contact.
   Stream<List<Circle>> watchForContact(String contactId) {
     final query = _db.select(_db.circles).join([

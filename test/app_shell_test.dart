@@ -117,12 +117,13 @@ void main() {
     });
 
     testWidgets('SearchScreen renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: SearchScreen()),
-      );
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const SearchScreen());
 
-      expect(find.text('Search'), findsOneWidget);
-      expect(find.text('Search for contacts and interactions'), findsOneWidget);
+        // Search field with hint text
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.text('Search for contacts and interactions'), findsOneWidget);
+      });
     });
 
     testWidgets('SettingsScreen renders correctly', (WidgetTester tester) async {

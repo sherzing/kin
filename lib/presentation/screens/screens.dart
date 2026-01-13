@@ -11,3 +11,4 @@ export 'interaction_editor_screen.dart';
 export 'interaction_list_screen.dart';
 export 'search_screen.dart';
 export 'settings_screen.dart';
+export 'timeline_screen.dart';
