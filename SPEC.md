@@ -31,35 +31,37 @@
 ### 3.1 The "Daily Deck" (Home Screen)
 Instead of a static list, the home screen presents a prioritized "Deck" of people to contact today.
 
-* **Logic:** Display contacts where `(Last Contacted Date + Cadence) <= Today`.
+* **Logic:** Display contacts where `(Last Contacted Date + Cadence) <= Today` AND (`snoozed_until` is NULL OR `snoozed_until <= Today`).
 * **Visual Interface:**
     * Card-based layout (Swipeable or vertically scrollable).
-    * **Health Rings:** Avatar surrounded by a color-coded ring indicating relationship status.
-	* 🟢 **Light Green (Mint):** Recently contacted.
-        * 🟡 **Light Yellow (Cream):** Approaching due date.
-        * 🔴 **Light Red (Rose):** Overdue.
+    * **Health Rings:** Avatar surrounded by a color-coded ring indicating relationship status (percentage-based thresholds).
+        * 🟢 **Light Green (Mint):** 0-50% of cadence elapsed since last contact.
+        * 🟡 **Light Yellow (Cream):** 50-100% of cadence elapsed (approaching due date).
+        * 🔴 **Light Red (Rose):** Over 100% of cadence elapsed (overdue).
 * **Card Actions:**
     * **Nudge:** Opens system share sheet (WhatsApp, iMessage, Email).
     * **Log:** Opens the Interaction Editor to record a conversation.
-    * **Snooze:** Pushes the reminder back by X days (customizable).
+    * **Snooze:** Pushes the reminder back by X days (customizable). Stores `snoozed_until` timestamp; contact hidden from Daily Deck until this date passes.
 
 ### 3.2 Contact Management ("The Circle")
 * **Onboarding/Import:**
     * Permission-based import from Device Contacts.
     * Deduplication check (merge by Phone/Email).
 * **Profile Data:**
-    * **Basic:** Name, Avatar (Local path), Birthday, Job Title.
+    * **Basic:** Name, Avatar (Local path), Phone, Email, Birthday, Job Title.
     * **Cadence:** Configurable integer (e.g., 7, 14, 30, 90 days).
     * **Circles (Tags):** Multi-select system (e.g., `#family`, `#college`, `#motorcycles`).
-* **Relationships:** Graph links (e.g., "Partner of [Contact ID]", "Child of [Contact ID]").
 
 ### 3.3 Interaction Logging (The Core Habit)
-The editor supports two distinct mental modes: **Preparation** and **Reflection**.
+The editor supports two distinct mental modes:
+* **Preparation Mode:** Notes created *before* an interaction (e.g., "Ask about their new job", "Remember to mention the book recommendation"). Flagged with `is_preparation = true`.
+* **Reflection Mode:** Notes created *after* an interaction to capture what was discussed. This is the default mode (`is_preparation = false`).
 
 * **Data Fields:**
     * `Type`: Call, Meetup, Message, Email, Gift.
     * `Date`: DateTime picker (Defaults to `Now`).
     * `Content`: Rich text field.
+    * `Is Preparation`: Toggle to mark as a prep note vs. reflection.
 * **Markdown Support:**
     * The Note field supports standard Markdown (Bold, Italic, Lists, Headers).
     * **Mobile Toolbar:** A custom row above the keyboard containing shortcuts (`B`, `I`, `•`, `H1`) to avoid typing raw Markdown syntax.
@@ -97,19 +99,27 @@ CREATE TABLE contacts (
     id TEXT PRIMARY KEY NOT NULL, -- UUID
     name TEXT NOT NULL,
     avatar_local_path TEXT,
+    phone TEXT,
+    email TEXT,
+    birthday INT, -- Unix Timestamp
+    job_title TEXT,
     cadence_days INTEGER DEFAULT 30,
     last_contacted_at INT, -- Unix Timestamp (Calculated or stored)
+    snoozed_until INT, -- Unix Timestamp, hides from Daily Deck until this date
     created_at INT NOT NULL,
     updated_at INT NOT NULL,
-    deleted_at INT, 
+    deleted_at INT,
     is_dirty BOOLEAN DEFAULT 0
 );
 
 -- TABLE: circles (Tags)
 CREATE TABLE circles (
     id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL, 
+    name TEXT NOT NULL,
     color_hex TEXT,
+    created_at INT NOT NULL,
+    updated_at INT NOT NULL,
+    deleted_at INT,
     is_dirty BOOLEAN DEFAULT 0
 );
 
@@ -117,6 +127,10 @@ CREATE TABLE circles (
 CREATE TABLE contact_circles (
     contact_id TEXT NOT NULL,
     circle_id TEXT NOT NULL,
+    created_at INT NOT NULL,
+    updated_at INT NOT NULL,
+    deleted_at INT,
+    is_dirty BOOLEAN DEFAULT 0,
     PRIMARY KEY (contact_id, circle_id),
     FOREIGN KEY(contact_id) REFERENCES contacts(id),
     FOREIGN KEY(circle_id) REFERENCES circles(id)
@@ -126,13 +140,17 @@ CREATE TABLE contact_circles (
 CREATE TABLE interactions (
     id TEXT PRIMARY KEY NOT NULL,
     contact_id TEXT NOT NULL,
-    type TEXT NOT NULL, -- 'call', 'meet', 'prep_note'
+    type TEXT NOT NULL, -- 'call', 'meetup', 'message', 'email', 'gift'
     content TEXT, -- Markdown content
+    is_preparation BOOLEAN DEFAULT 0, -- 1 = prep note (before), 0 = reflection (after)
     happened_at INT NOT NULL,
     created_at INT NOT NULL,
+    updated_at INT NOT NULL,
+    deleted_at INT,
     is_dirty BOOLEAN DEFAULT 0,
     FOREIGN KEY(contact_id) REFERENCES contacts(id)
 );
+```
 
 ## 5. UI/UX Specifications (The "Delight" Layer)
 
@@ -170,3 +188,7 @@ To achieve the "Delightful" requirement, the app must move away from standard sy
 ### 6.3 Gift Tracking
 * **Goal:** Solve the "What do I get them?" problem.
 * **Implementation:** A dedicated "Gifts" tab in the user profile to log ideas throughout the year and mark them as "Given" with a date.
+
+### 6.4 Contact Relationships
+* **Goal:** Model social graphs between contacts.
+* **Implementation:** A `contact_relationships` table storing graph links (e.g., "Partner of [Contact ID]", "Child of [Contact ID]") to show family/friend connections.
