@@ -11,51 +11,39 @@ void main() {
     setUpTestEnvironment();
   });
 
-  // Note: ContactListScreen uses StreamProvider which causes timer cleanup issues
-  // in widget tests. These tests are skipped until a proper solution is found.
-  // The underlying functionality is tested via repository unit tests.
-
   group('ContactListScreen', () {
     testWidgets('renders with app bar and FAB', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(home: ContactListScreen()),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const ContactListScreen());
 
-      expect(find.text('Contacts'), findsOneWidget);
-      expect(find.byType(FloatingActionButton), findsOneWidget);
-      expect(find.byIcon(Icons.add), findsOneWidget);
-    }, skip: true); // StreamProvider cleanup causes timer issues
+        expect(find.text('Contacts'), findsOneWidget);
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
+      });
+    });
 
     testWidgets('shows empty state when no contacts', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(home: ContactListScreen()),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const ContactListScreen());
 
-      expect(find.text('No contacts yet'), findsOneWidget);
-      expect(find.text('Tap + to add your first contact'), findsOneWidget);
-      expect(find.byIcon(Icons.people_outline), findsOneWidget);
-    }, skip: true); // StreamProvider cleanup causes timer issues
+        expect(find.text('No contacts yet'), findsOneWidget);
+        expect(find.text('Tap + to add your first contact'), findsOneWidget);
+        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+      });
+    });
 
     testWidgets('shows loading indicator initially', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(home: ContactListScreen()),
-        ),
-      );
+      await testWithDatabase(tester, (db) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: createTestProviderOverridesWithDb(db),
+            child: const MaterialApp(home: ContactListScreen()),
+          ),
+        );
 
-      // On first pump, should show loading
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    }, skip: true); // StreamProvider cleanup causes timer issues
+        // On first pump, should show loading
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      });
+    });
   });
 }

@@ -38,21 +38,23 @@ void main() {
   });
 
   testWidgets('Bottom nav navigates to Contacts tab', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: createTestProviderOverrides(),
-        child: const KinApp(),
-      ),
-    );
+    await testWithDatabase(tester, (db) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: createTestProviderOverridesWithDb(db),
+          child: const KinApp(),
+        ),
+      );
 
-    // Tap on Contacts tab
-    await tester.tap(find.text('Contacts'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+      // Tap on Contacts tab
+      await tester.tap(find.text('Contacts'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-    // Verify we're on the Contacts screen (check for loading or empty state)
-    expect(find.byType(Scaffold), findsWidgets);
-  }, skip: true); // StreamProvider cleanup causes timer issues in widget tests
+      // Verify we're on the Contacts screen (check for loading or empty state)
+      expect(find.byType(Scaffold), findsWidgets);
+    });
+  });
 
   testWidgets('Bottom nav navigates to Search tab', (WidgetTester tester) async {
     await tester.pumpWidget(

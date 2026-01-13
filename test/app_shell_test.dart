@@ -62,53 +62,41 @@ void main() {
     });
 
     testWidgets('ContactListScreen renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(home: ContactListScreen()),
-        ),
-      );
-      // Use pump instead of pumpAndSettle for StreamProvider
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const ContactListScreen());
 
-      expect(find.text('Contacts'), findsOneWidget);
-      expect(find.byType(Scaffold), findsOneWidget);
-    }, skip: true); // StreamProvider cleanup causes timer issues in widget tests
+        expect(find.text('Contacts'), findsOneWidget);
+        expect(find.byType(Scaffold), findsOneWidget);
+      });
+    });
 
     testWidgets('ContactDetailScreen renders with contactId', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(
-            home: ContactDetailScreen(contactId: 'test-123'),
-          ),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(
+          tester,
+          db,
+          const ContactDetailScreen(contactId: 'test-123'),
+        );
 
-      // Contact not found since test DB is empty
-      expect(find.text('Contact Not Found'), findsOneWidget);
-    }, skip: true); // FutureProvider cleanup causes timer issues in widget tests
+        // Contact not found since test DB is empty
+        expect(find.text('Contact Not Found'), findsOneWidget);
+      });
+    });
 
     testWidgets('InteractionListScreen renders with contactId', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: createTestProviderOverrides(),
-          child: const MaterialApp(
-            home: InteractionListScreen(contactId: 'test-456'),
-          ),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(
+          tester,
+          db,
+          const InteractionListScreen(contactId: 'test-456'),
+        );
 
-      // Shows Interactions in AppBar (fallback for missing contact)
-      expect(find.text('Interactions'), findsOneWidget);
-      // Shows empty state since test DB has no interactions
-      expect(find.text('No interactions yet'), findsOneWidget);
-    }, skip: true); // StreamProvider cleanup causes timer issues in widget tests
+        // Shows Interactions in AppBar (fallback for missing contact)
+        expect(find.text('Interactions'), findsOneWidget);
+        // Shows empty state since test DB has no interactions
+        expect(find.text('No interactions yet'), findsOneWidget);
+      });
+    });
 
     testWidgets('SearchScreen renders correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
