@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers/providers.dart';
 import '../../data/database/database.dart';
 import '../../data/database/tables/interactions.dart';
+import '../widgets/widgets.dart';
 
 /// Screen for creating or editing an interaction.
 class InteractionEditorScreen extends ConsumerStatefulWidget {
@@ -207,22 +208,19 @@ class _InteractionEditorScreenState
             ),
             const SizedBox(height: 24),
 
-            // Content field
+            // Content field with Markdown editor
             Text(
               _isPreparation ? 'Preparation Notes' : 'Notes',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
-            TextFormField(
+            MarkdownEditor(
               controller: _contentController,
-              maxLines: 8,
-              decoration: InputDecoration(
-                hintText: _isPreparation
-                    ? 'What do you want to talk about?'
-                    : 'How did it go?',
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
+              hintText: _isPreparation
+                  ? 'What do you want to talk about?'
+                  : 'How did it go?',
+              minLines: 5,
+              maxLines: 12,
             ),
           ],
         ),
