@@ -82,6 +82,8 @@ class _ContactDetailView extends ConsumerWidget {
           children: [
             _ContactHeader(contact: contact),
             const SizedBox(height: 24),
+            _CirclesSection(contactId: contact.id),
+            const SizedBox(height: 24),
             _ContactInfoSection(contact: contact),
             const SizedBox(height: 24),
             _ContactStatusSection(contact: contact),
@@ -408,5 +410,209 @@ class _InteractionsSection extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _CirclesSection extends ConsumerWidget {
+  const _CirclesSection({required this.contactId});
+
+  final String contactId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final circlesAsync = ref.watch(circlesForContactProvider(contactId));
+    final allCirclesAsync = ref.watch(circlesProvider);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Circles',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                TextButton(
+                  onPressed: () => _showCircleSelector(context, ref, allCirclesAsync),
+                  child: const Text('Edit'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            circlesAsync.when(
+              data: (circles) {
+                if (circles.isEmpty) {
+                  return Text(
+                    'Not in any circles',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                  );
+                }
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: circles.map((circle) {
+                    return Chip(
+                      avatar: CircleAvatar(
+                        backgroundColor: _hexToColor(circle.colorHex),
+                        radius: 10,
+                      ),
+                      label: Text(circle.name),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const SizedBox(
+                height: 32,
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              error: (error, stack) => Text('Error: $error'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCircleSelector(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<Circle>> allCirclesAsync,
+  ) async {
+    final currentCircles =
+        await ref.read(circlesForContactProvider(contactId).future);
+    final currentIds = currentCircles.map((c) => c.id).toSet();
+
+    if (!context.mounted) return;
+
+    final allCircles = allCirclesAsync.valueOrNull ?? [];
+    if (allCircles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No circles yet. Create circles in Settings first.'),
+        ),
+      );
+      return;
+    }
+
+    final selected = await showDialog<Set<String>>(
+      context: context,
+      builder: (context) => _CircleSelectorDialog(
+        allCircles: allCircles,
+        selectedIds: currentIds,
+      ),
+    );
+
+    if (selected == null) return;
+
+    // Add new circles
+    for (final id in selected.difference(currentIds)) {
+      await ref
+          .read(circleNotifierProvider.notifier)
+          .addContactToCircle(contactId, id);
+    }
+
+    // Remove circles
+    for (final id in currentIds.difference(selected)) {
+      await ref
+          .read(circleNotifierProvider.notifier)
+          .removeContactFromCircle(contactId, id);
+    }
+  }
+
+  Color _hexToColor(String? hex) {
+    if (hex == null || hex.isEmpty) {
+      return Colors.blue;
+    }
+    final hexCode = hex.replaceFirst('#', '');
+    return Color(int.parse('FF$hexCode', radix: 16));
+  }
+}
+
+class _CircleSelectorDialog extends StatefulWidget {
+  const _CircleSelectorDialog({
+    required this.allCircles,
+    required this.selectedIds,
+  });
+
+  final List<Circle> allCircles;
+  final Set<String> selectedIds;
+
+  @override
+  State<_CircleSelectorDialog> createState() => _CircleSelectorDialogState();
+}
+
+class _CircleSelectorDialogState extends State<_CircleSelectorDialog> {
+  late Set<String> _selectedIds;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIds = Set.from(widget.selectedIds);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Circles'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.allCircles.map((circle) {
+            final isSelected = _selectedIds.contains(circle.id);
+            return CheckboxListTile(
+              value: isSelected,
+              onChanged: (value) {
+                setState(() {
+                  if (value == true) {
+                    _selectedIds.add(circle.id);
+                  } else {
+                    _selectedIds.remove(circle.id);
+                  }
+                });
+              },
+              title: Text(circle.name),
+              secondary: CircleAvatar(
+                backgroundColor: _hexToColor(circle.colorHex),
+                radius: 16,
+                child: Icon(
+                  Icons.label,
+                  color: _contrastColor(_hexToColor(circle.colorHex)),
+                  size: 16,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _selectedIds),
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+
+  Color _hexToColor(String? hex) {
+    if (hex == null || hex.isEmpty) {
+      return Colors.blue;
+    }
+    final hexCode = hex.replaceFirst('#', '');
+    return Color(int.parse('FF$hexCode', radix: 16));
+  }
+
+  Color _contrastColor(Color color) {
+    final luminance = color.computeLuminance();
+    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }
