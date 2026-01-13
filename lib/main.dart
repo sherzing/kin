@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/router/router.dart';
 import 'core/theme/theme.dart';
 
 void main() {
@@ -12,33 +13,17 @@ void main() {
 }
 
 /// The root widget for the Kin app.
-class KinApp extends StatelessWidget {
+class KinApp extends ConsumerWidget {
   const KinApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
+    return MaterialApp.router(
       title: 'Kin',
       theme: AppTheme.light,
-      home: const PlaceholderHomePage(),
-    );
-  }
-}
-
-/// Temporary placeholder home page.
-/// Will be replaced with Daily Deck screen.
-class PlaceholderHomePage extends StatelessWidget {
-  const PlaceholderHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kin'),
-      ),
-      body: const Center(
-        child: Text('Welcome to Kin'),
-      ),
+      routerConfig: router,
     );
   }
 }

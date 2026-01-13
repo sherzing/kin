@@ -5,28 +5,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kin/main.dart';
 
 void main() {
-  testWidgets('App renders with Kin title', (WidgetTester tester) async {
+  testWidgets('App renders with Daily Deck as home', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: KinApp(),
       ),
     );
 
-    expect(find.text('Kin'), findsOneWidget);
-    expect(find.text('Welcome to Kin'), findsOneWidget);
+    // go_router shows Daily Deck as home route
+    expect(find.text('Daily Deck'), findsWidgets);
   });
 
-  testWidgets('App uses correct theme', (WidgetTester tester) async {
+  testWidgets('App uses MaterialApp.router', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: KinApp(),
       ),
     );
 
-    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-    expect(scaffold, isNotNull);
-
+    // Verify the app is using router
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.routerConfig, isNotNull);
     expect(materialApp.theme, isNotNull);
   });
 }
