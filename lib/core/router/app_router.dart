@@ -11,6 +11,8 @@ abstract final class AppRoutes {
   static const String contactDetail = '/contacts/:id';
   static const String contactEdit = '/contacts/:id/edit';
   static const String contactInteractions = '/contacts/:id/interactions';
+  static const String interactionNew = '/contacts/:id/interactions/new';
+  static const String interactionEdit = '/contacts/:id/interactions/:interactionId/edit';
   static const String circles = '/circles';
   static const String search = '/search';
   static const String settings = '/settings';
@@ -59,6 +61,31 @@ final routerProvider = Provider<GoRouter>((ref) {
                           final id = state.pathParameters['id']!;
                           return InteractionListScreen(contactId: id);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            name: 'interactionNew',
+                            builder: (context, state) {
+                              final contactId = state.pathParameters['id']!;
+                              return InteractionEditorScreen(
+                                contactId: contactId,
+                              );
+                            },
+                          ),
+                          GoRoute(
+                            path: ':interactionId/edit',
+                            name: 'interactionEdit',
+                            builder: (context, state) {
+                              final contactId = state.pathParameters['id']!;
+                              final interactionId =
+                                  state.pathParameters['interactionId']!;
+                              return InteractionEditorScreen(
+                                contactId: contactId,
+                                interactionId: interactionId,
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
