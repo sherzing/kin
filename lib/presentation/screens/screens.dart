@@ -2,6 +2,7 @@
 library;
 
 export 'app_shell_screen.dart';
+export 'circle_list_screen.dart';
 export 'contact_detail_screen.dart';
 export 'contact_form_screen.dart';
 export 'contact_list_screen.dart';

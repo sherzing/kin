@@ -118,7 +118,8 @@ void main() {
       );
 
       expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('App settings will appear here'), findsOneWidget);
+      expect(find.text('Manage Circles'), findsOneWidget);
+      expect(find.text('About Kin'), findsOneWidget);
     });
   });
 
@@ -136,7 +137,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('App settings will appear here'), findsOneWidget);
+      expect(find.text('Manage Circles'), findsOneWidget);
       // Settings is outside shell, so no bottom nav
       expect(find.byType(NavigationBar), findsNothing);
     });

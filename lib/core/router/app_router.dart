@@ -11,6 +11,7 @@ abstract final class AppRoutes {
   static const String contactDetail = '/contacts/:id';
   static const String contactEdit = '/contacts/:id/edit';
   static const String contactInteractions = '/contacts/:id/interactions';
+  static const String circles = '/circles';
   static const String search = '/search';
   static const String settings = '/settings';
 }
@@ -82,6 +83,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.settings,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // Circles management
+      GoRoute(
+        path: AppRoutes.circles,
+        name: 'circles',
+        builder: (context, state) => const CircleListScreen(),
       ),
       // Contact form routes (outside shell for modal-like experience)
       GoRoute(
