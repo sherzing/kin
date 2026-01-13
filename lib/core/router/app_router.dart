@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../presentation/screens/screens.dart';
 
 /// Route paths for the app.
 abstract final class AppRoutes {
@@ -20,19 +21,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Daily Deck'),
+        builder: (context, state) => const DailyDeckScreen(),
       ),
       GoRoute(
         path: AppRoutes.contacts,
         name: 'contacts',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Contacts'),
+        builder: (context, state) => const ContactListScreen(),
         routes: [
           GoRoute(
             path: ':id',
             name: 'contactDetail',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
-              return _PlaceholderScreen(title: 'Contact: $id');
+              return ContactDetailScreen(contactId: id);
             },
             routes: [
               GoRoute(
@@ -40,7 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 name: 'contactInteractions',
                 builder: (context, state) {
                   final id = state.pathParameters['id']!;
-                  return _PlaceholderScreen(title: 'Interactions: $id');
+                  return InteractionListScreen(contactId: id);
                 },
               ),
             ],
@@ -50,35 +51,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.search,
         name: 'search',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Search'),
+        builder: (context, state) => const SearchScreen(),
       ),
       GoRoute(
         path: AppRoutes.settings,
         name: 'settings',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );
 });
-
-/// Temporary placeholder screen for routes.
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
-    );
-  }
-}
