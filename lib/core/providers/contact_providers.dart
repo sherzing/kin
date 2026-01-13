@@ -109,6 +109,19 @@ class ContactNotifier extends Notifier<void> {
     return contact;
   }
 
+  /// Update a contact's last contacted date to a specific time.
+  ///
+  /// Used when logging interactions to set the contact's last_contacted_at
+  /// to the interaction's happened_at timestamp.
+  Future<Contact> updateLastContactedAt(String id, DateTime contactedAt) async {
+    final repository = ref.read(contactRepositoryProvider);
+    final contact = await repository.update(id, lastContactedAt: contactedAt);
+    ref.invalidate(contactsProvider);
+    ref.invalidate(dueContactsProvider);
+    ref.invalidate(contactProvider(id));
+    return contact;
+  }
+
   /// Snooze a contact until a specific date.
   Future<Contact> snooze(String id, DateTime until) async {
     final repository = ref.read(contactRepositoryProvider);

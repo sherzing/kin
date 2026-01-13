@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database/database.dart';
 import '../../data/database/tables/interactions.dart';
+import 'contact_providers.dart';
 import 'database_providers.dart';
 
 /// Provider for all non-deleted interactions as a stream.
@@ -60,6 +61,9 @@ class InteractionNotifier extends Notifier<void> {
   void build() {}
 
   /// Create a new interaction.
+  ///
+  /// If [isPreparation] is false, updates the contact's last_contacted_at
+  /// to the interaction's happened_at timestamp.
   Future<Interaction> create({
     required String contactId,
     required InteractionType type,
@@ -75,6 +79,14 @@ class InteractionNotifier extends Notifier<void> {
       isPreparation: isPreparation,
       happenedAt: happenedAt,
     );
+
+    // Update contact's last_contacted_at for non-preparation interactions
+    if (!isPreparation) {
+      final contactNotifier = ref.read(contactNotifierProvider.notifier);
+      final interactionTime = happenedAt ?? DateTime.now();
+      await contactNotifier.updateLastContactedAt(contactId, interactionTime);
+    }
+
     ref.invalidate(interactionsProvider);
     ref.invalidate(interactionsForContactProvider(contactId));
     ref.invalidate(recentInteractionProvider(contactId));
@@ -82,9 +94,12 @@ class InteractionNotifier extends Notifier<void> {
   }
 
   /// Update an existing interaction.
+  ///
+  /// If [isPreparation] is false, updates the contact's last_contacted_at
+  /// to the interaction's happened_at timestamp.
   Future<Interaction> update(
     String id, {
-    String? contactId, // Only used for invalidation
+    required String contactId,
     InteractionType? type,
     String? content,
     bool? isPreparation,
@@ -98,12 +113,21 @@ class InteractionNotifier extends Notifier<void> {
       isPreparation: isPreparation,
       happenedAt: happenedAt,
     );
+
+    // Update contact's last_contacted_at for non-preparation interactions
+    final updatedIsPreparation = isPreparation ?? interaction.isPreparation;
+    if (!updatedIsPreparation) {
+      final contactNotifier = ref.read(contactNotifierProvider.notifier);
+      // Use the updated happenedAt or the interaction's current timestamp
+      final interactionTime = happenedAt ??
+          DateTime.fromMillisecondsSinceEpoch(interaction.happenedAt * 1000);
+      await contactNotifier.updateLastContactedAt(contactId, interactionTime);
+    }
+
     ref.invalidate(interactionsProvider);
     ref.invalidate(interactionProvider(id));
-    if (contactId != null) {
-      ref.invalidate(interactionsForContactProvider(contactId));
-      ref.invalidate(recentInteractionProvider(contactId));
-    }
+    ref.invalidate(interactionsForContactProvider(contactId));
+    ref.invalidate(recentInteractionProvider(contactId));
     return interaction;
   }
 
