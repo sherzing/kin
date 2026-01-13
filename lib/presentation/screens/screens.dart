@@ -1,6 +1,7 @@
 /// Screen exports for Kin.
 library;
 
+export 'app_shell_screen.dart';
 export 'contact_detail_screen.dart';
 export 'contact_list_screen.dart';
 export 'daily_deck_screen.dart';

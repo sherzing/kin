@@ -18,41 +18,64 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.home,
     routes: [
-      GoRoute(
-        path: AppRoutes.home,
-        name: 'home',
-        builder: (context, state) => const DailyDeckScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.contacts,
-        name: 'contacts',
-        builder: (context, state) => const ContactListScreen(),
-        routes: [
-          GoRoute(
-            path: ':id',
-            name: 'contactDetail',
-            builder: (context, state) {
-              final id = state.pathParameters['id']!;
-              return ContactDetailScreen(contactId: id);
-            },
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AppShellScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          // Home (Daily Deck) branch
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'interactions',
-                name: 'contactInteractions',
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return InteractionListScreen(contactId: id);
-                },
+                path: AppRoutes.home,
+                name: 'home',
+                builder: (context, state) => const DailyDeckScreen(),
+              ),
+            ],
+          ),
+          // Contacts branch
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.contacts,
+                name: 'contacts',
+                builder: (context, state) => const ContactListScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    name: 'contactDetail',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return ContactDetailScreen(contactId: id);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'interactions',
+                        name: 'contactInteractions',
+                        builder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          return InteractionListScreen(contactId: id);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Search branch
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.search,
+                name: 'search',
+                builder: (context, state) => const SearchScreen(),
               ),
             ],
           ),
         ],
       ),
-      GoRoute(
-        path: AppRoutes.search,
-        name: 'search',
-        builder: (context, state) => const SearchScreen(),
-      ),
+      // Settings is outside the shell (full screen)
       GoRoute(
         path: AppRoutes.settings,
         name: 'settings',
