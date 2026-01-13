@@ -7,7 +7,9 @@ import '../../presentation/screens/screens.dart';
 abstract final class AppRoutes {
   static const String home = '/';
   static const String contacts = '/contacts';
+  static const String contactNew = '/contacts/new';
   static const String contactDetail = '/contacts/:id';
+  static const String contactEdit = '/contacts/:id/edit';
   static const String contactInteractions = '/contacts/:id/interactions';
   static const String search = '/search';
   static const String settings = '/settings';
@@ -80,6 +82,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.settings,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // Contact form routes (outside shell for modal-like experience)
+      GoRoute(
+        path: AppRoutes.contactNew,
+        name: 'contactNew',
+        builder: (context, state) => const ContactFormScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.contactEdit,
+        name: 'contactEdit',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ContactFormScreen(contactId: id);
+        },
       ),
     ],
   );

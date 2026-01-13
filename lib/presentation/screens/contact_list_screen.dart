@@ -31,79 +31,10 @@ class ContactListScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddContactDialog(context, ref),
+        onPressed: () => context.push('/contacts/new'),
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  Future<void> _showAddContactDialog(BuildContext context, WidgetRef ref) async {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final emailController = TextEditingController();
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Contact'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter contact name',
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone (optional)',
-                  hintText: 'Enter phone number',
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email (optional)',
-                  hintText: 'Enter email address',
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && nameController.text.isNotEmpty) {
-      await ref.read(contactNotifierProvider.notifier).create(
-            name: nameController.text.trim(),
-            phone: phoneController.text.trim().isEmpty
-                ? null
-                : phoneController.text.trim(),
-            email: emailController.text.trim().isEmpty
-                ? null
-                : emailController.text.trim(),
-          );
-    }
   }
 }
 

@@ -54,7 +54,7 @@ class _ContactDetailView extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => _showEditDialog(context, ref),
+            onPressed: () => context.push('/contacts/${contact.id}/edit'),
           ),
           PopupMenuButton<String>(
             onSelected: (value) => _handleMenuAction(context, ref, value),
@@ -98,86 +98,6 @@ class _ContactDetailView extends ConsumerWidget {
         label: const Text('Log Interaction'),
       ),
     );
-  }
-
-  Future<void> _showEditDialog(BuildContext context, WidgetRef ref) async {
-    final nameController = TextEditingController(text: contact.name);
-    final phoneController = TextEditingController(text: contact.phone ?? '');
-    final emailController = TextEditingController(text: contact.email ?? '');
-    final jobTitleController =
-        TextEditingController(text: contact.jobTitle ?? '');
-    final cadenceController =
-        TextEditingController(text: contact.cadenceDays.toString());
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Contact'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: jobTitleController,
-                decoration: const InputDecoration(labelText: 'Job Title'),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: cadenceController,
-                decoration:
-                    const InputDecoration(labelText: 'Contact Cadence (days)'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && nameController.text.isNotEmpty) {
-      await ref.read(contactNotifierProvider.notifier).update(
-            contact.id,
-            name: nameController.text.trim(),
-            phone: phoneController.text.trim().isEmpty
-                ? null
-                : phoneController.text.trim(),
-            email: emailController.text.trim().isEmpty
-                ? null
-                : emailController.text.trim(),
-            jobTitle: jobTitleController.text.trim().isEmpty
-                ? null
-                : jobTitleController.text.trim(),
-            cadenceDays: int.tryParse(cadenceController.text) ?? 30,
-          );
-    }
   }
 
   Future<void> _handleMenuAction(

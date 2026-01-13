@@ -44,6 +44,7 @@ class ContactNotifier extends Notifier<void> {
     String? email,
     DateTime? birthday,
     String? jobTitle,
+    String? avatarLocalPath,
     int cadenceDays = 30,
   }) async {
     final repository = ref.read(contactRepositoryProvider);
@@ -53,6 +54,7 @@ class ContactNotifier extends Notifier<void> {
       email: email,
       birthday: birthday,
       jobTitle: jobTitle,
+      avatarLocalPath: avatarLocalPath,
       cadenceDays: cadenceDays,
     );
     ref.invalidate(contactsProvider);
@@ -68,6 +70,7 @@ class ContactNotifier extends Notifier<void> {
     String? email,
     DateTime? birthday,
     String? jobTitle,
+    String? avatarLocalPath,
     int? cadenceDays,
   }) async {
     final repository = ref.read(contactRepositoryProvider);
@@ -78,6 +81,7 @@ class ContactNotifier extends Notifier<void> {
       email: email,
       birthday: birthday,
       jobTitle: jobTitle,
+      avatarLocalPath: avatarLocalPath,
       cadenceDays: cadenceDays,
     );
     ref.invalidate(contactsProvider);
