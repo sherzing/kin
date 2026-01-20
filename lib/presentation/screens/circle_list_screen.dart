@@ -263,11 +263,17 @@ class _CircleFormDialogState extends State<_CircleFormDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName ?? '');
+    _nameController.addListener(_onNameChanged);
     _selectedColor = widget.initialColor ?? Colors.blue;
+  }
+
+  void _onNameChanged() {
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     super.dispose();
   }

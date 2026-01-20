@@ -47,6 +47,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 name: 'contacts',
                 builder: (context, state) => const ContactListScreen(),
                 routes: [
+                  // New contact route must come BEFORE :id to match first
+                  GoRoute(
+                    path: 'new',
+                    name: 'contactNew',
+                    builder: (context, state) => const ContactFormScreen(),
+                  ),
                   GoRoute(
                     path: ':id',
                     name: 'contactDetail',
@@ -124,12 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'timeline',
         builder: (context, state) => const TimelineScreen(),
       ),
-      // Contact form routes (outside shell for modal-like experience)
-      GoRoute(
-        path: AppRoutes.contactNew,
-        name: 'contactNew',
-        builder: (context, state) => const ContactFormScreen(),
-      ),
+      // Contact edit route (outside shell for modal-like experience)
       GoRoute(
         path: AppRoutes.contactEdit,
         name: 'contactEdit',
