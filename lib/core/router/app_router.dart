@@ -17,6 +17,7 @@ abstract final class AppRoutes {
   static const String search = '/search';
   static const String settings = '/settings';
   static const String timeline = '/timeline';
+  static const String importContacts = '/import';
 }
 
 /// Provider for the app router.
@@ -129,6 +130,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.timeline,
         name: 'timeline',
         builder: (context, state) => const TimelineScreen(),
+      ),
+      // Contact import
+      GoRoute(
+        path: AppRoutes.importContacts,
+        name: 'importContacts',
+        builder: (context, state) => const ImportSourceScreen(),
       ),
       // Contact edit route (outside shell for modal-like experience)
       GoRoute(

@@ -34,6 +34,14 @@ void main() {
       });
     });
 
+    testWidgets('empty state offers "Import from your phone" action',
+        (WidgetTester tester) async {
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const ContactListScreen());
+        expect(find.text('Import from your phone'), findsOneWidget);
+      });
+    });
+
     testWidgets('shows loading indicator initially', (WidgetTester tester) async {
       await testWithDatabase(tester, (db) async {
         await tester.pumpWidget(

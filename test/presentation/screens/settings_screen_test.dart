@@ -89,5 +89,14 @@ void main() {
         expect(find.text('About Kin'), findsOneWidget);
       });
     });
+
+    testWidgets('exposes Import Contacts tile under Data section',
+        (WidgetTester tester) async {
+      await testWithDatabase(tester, (db) async {
+        await pumpWidgetWithDb(tester, db, const SettingsScreen());
+        expect(find.text('Data'), findsOneWidget);
+        expect(find.text('Import Contacts'), findsOneWidget);
+      });
+    });
   });
 }

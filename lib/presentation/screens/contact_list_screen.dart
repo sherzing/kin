@@ -50,6 +50,7 @@ class ContactListScreen extends ConsumerWidget {
                 if (contacts.isEmpty) {
                   return _EmptyContactsView(
                     onAddContact: () => context.push('/contacts/new'),
+                    onImport: () => context.push('/import'),
                   );
                 }
                 return _FilteredContactList(
@@ -177,13 +178,17 @@ class _FilteredContactList extends ConsumerWidget {
 }
 
 class _EmptyContactsView extends StatelessWidget {
-  const _EmptyContactsView({this.onAddContact});
+  const _EmptyContactsView({this.onAddContact, this.onImport});
 
   final VoidCallback? onAddContact;
+  final VoidCallback? onImport;
 
   @override
   Widget build(BuildContext context) {
-    return NoContactsIllustration(onAddContact: onAddContact);
+    return NoContactsIllustration(
+      onAddContact: onAddContact,
+      onImport: onImport,
+    );
   }
 }
 

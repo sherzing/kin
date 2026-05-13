@@ -15,6 +15,8 @@ class EmptyStateIllustration extends StatelessWidget {
     required this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
     this.secondaryIcon,
     this.decorationColor,
   });
@@ -36,6 +38,13 @@ class EmptyStateIllustration extends StatelessWidget {
 
   /// Optional action callback
   final VoidCallback? onAction;
+
+  /// Optional secondary action label (rendered below the primary action as a
+  /// TextButton — use for an alternative path like "Import from your phone").
+  final String? secondaryActionLabel;
+
+  /// Optional secondary action callback
+  final VoidCallback? onSecondaryAction;
 
   /// Optional custom decoration color
   final Color? decorationColor;
@@ -85,6 +94,13 @@ class EmptyStateIllustration extends StatelessWidget {
                 onPressed: onAction,
                 icon: const Icon(Icons.add),
                 label: Text(actionLabel!),
+              ),
+            ],
+            if (secondaryActionLabel != null && onSecondaryAction != null) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: onSecondaryAction,
+                child: Text(secondaryActionLabel!),
               ),
             ],
           ],
@@ -187,9 +203,11 @@ class NoContactsIllustration extends StatelessWidget {
   const NoContactsIllustration({
     super.key,
     this.onAddContact,
+    this.onImport,
   });
 
   final VoidCallback? onAddContact;
+  final VoidCallback? onImport;
 
   @override
   Widget build(BuildContext context) {
@@ -201,6 +219,8 @@ class NoContactsIllustration extends StatelessWidget {
           'Add the people you want to stay in touch with.\nKin will help you nurture those relationships.',
       actionLabel: 'Add Your First Contact',
       onAction: onAddContact,
+      secondaryActionLabel: onImport == null ? null : 'Import from your phone',
+      onSecondaryAction: onImport,
     );
   }
 }

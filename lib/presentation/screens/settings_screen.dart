@@ -42,6 +42,18 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           _SettingsSection(
+            title: 'Data',
+            children: [
+              ListTile(
+                leading: const Icon(Icons.download),
+                title: const Text('Import Contacts'),
+                subtitle: const Text('Bring in people from your phone or a file'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/import'),
+              ),
+            ],
+          ),
+          _SettingsSection(
             title: 'About',
             children: [
               ListTile(
