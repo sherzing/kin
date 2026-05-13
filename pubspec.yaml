@@ -59,6 +59,9 @@ dependencies:
   # URL launcher for nudge actions (phone, SMS, email)
   url_launcher: ^6.3.1
 
+  # Native contacts access for import (iOS/Android)
+  flutter_contacts: ^1.1.9+2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
