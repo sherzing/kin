@@ -12,6 +12,20 @@ bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
+## Testing Requirements
+
+Follow Test-Driven Development (TDD):
+1. **Write tests first** before implementing functionality
+2. **Red-Green-Refactor:** Write a failing test, make it pass, then refactor
+3. **All functionality must have tests** — no feature is complete without corresponding test coverage
+
+Test organization:
+- Unit tests for all business logic, repositories, and providers
+- Widget tests for UI components
+- Integration tests for critical user flows (Daily Deck, interaction logging, contact import)
+
+Run `flutter test` before committing to ensure all tests pass.
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
