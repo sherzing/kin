@@ -40,5 +40,14 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # Enable specific permission_handler permissions at compile time.
+      # Without these macros, the corresponding request() calls silently
+      # no-op because the permission type is compiled out of the pod.
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_CONTACTS=1',
+      ]
+    end
   end
 end
