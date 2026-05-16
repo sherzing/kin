@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter_contacts/flutter_contacts.dart' as fc;
+import 'package:fast_contacts/fast_contacts.dart' as fc;
+import 'package:permission_handler/permission_handler.dart' as ph;
+import 'package:url_launcher/url_launcher.dart';
 
 /// Permission state for accessing the device's contacts.
 enum ContactPermissionStatus {
@@ -67,52 +70,74 @@ abstract interface class ContactImportService {
   Future<List<ImportableContact>> loadContacts();
 }
 
-/// Wraps the `flutter_contacts` package. Thin pass-through — the testable
-/// behavior (mapping, dedup) lives in [ImportableContact] and downstream
-/// services. flutter_contacts itself is a platform-channel boundary and is
-/// exercised by manual / integration testing on device.
+/// Wraps `fast_contacts` (for bulk contact retrieval) and `permission_handler`
+/// (for permission gating). fast_contacts requires the permission to already
+/// be granted before calling [loadContacts]; we use permission_handler so the
+/// flow surfaces the iOS system prompt without depending on a contacts
+/// package that does its own permission handling. Birthday is intentionally
+/// not imported here — fast_contacts doesn't expose contact events.
 class FlutterContactImportService implements ContactImportService {
   const FlutterContactImportService();
 
   @override
-  Future<ContactPermissionStatus> currentPermissionStatus() async {
-    return _toStatus(await fc.FlutterContacts.requestPermission(readonly: true));
-  }
+  Future<ContactPermissionStatus> currentPermissionStatus() async =>
+      _toStatus(await ph.Permission.contacts.status);
 
   @override
-  Future<ContactPermissionStatus> requestPermission() async {
-    return _toStatus(await fc.FlutterContacts.requestPermission(readonly: true));
-  }
+  Future<ContactPermissionStatus> requestPermission() async =>
+      _toStatus(await ph.Permission.contacts.request());
 
   @override
   Future<List<ImportableContact>> loadContacts() async {
-    final contacts = await fc.FlutterContacts.getContacts(
-      withProperties: true,
-      withThumbnail: true,
-    );
-    return contacts.map(_fromFlutterContact).toList(growable: false);
+    final contacts = await fc.FastContacts.getAllContacts();
+    final result = <ImportableContact>[];
+    for (final c in contacts) {
+      Uint8List? thumb;
+      try {
+        thumb = await fc.FastContacts.getContactImage(c.id);
+      } catch (_) {
+        thumb = null;
+      }
+      result.add(_fromFastContact(c, thumb));
+    }
+    return result;
   }
 
-  static ContactPermissionStatus _toStatus(bool granted) =>
-      granted ? ContactPermissionStatus.granted : ContactPermissionStatus.denied;
-
-  static ImportableContact _fromFlutterContact(fc.Contact c) {
-    DateTime? birthday;
-    for (final e in c.events) {
-      if (e.label == fc.EventLabel.birthday) {
-        birthday = DateTime(e.year ?? 1900, e.month, e.day);
-        break;
-      }
+  /// Opens the iOS Settings app at the Kin app entry, where the user can
+  /// toggle Contacts permission. Uses url_launcher with the `app-settings:`
+  /// URL scheme on iOS; falls back to a no-op on other platforms.
+  Future<void> openPlatformSettings() async {
+    if (!Platform.isIOS) return;
+    final uri = Uri.parse('app-settings:');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     }
-    final orgTitle = c.organizations.isNotEmpty ? c.organizations.first.title : '';
+  }
+
+  static ContactPermissionStatus _toStatus(ph.PermissionStatus s) {
+    if (s.isGranted || s.isLimited) return ContactPermissionStatus.granted;
+    if (s.isPermanentlyDenied) return ContactPermissionStatus.permanentlyDenied;
+    if (s.isRestricted) return ContactPermissionStatus.restricted;
+    return ContactPermissionStatus.denied;
+  }
+
+  static ImportableContact _fromFastContact(fc.Contact c, Uint8List? thumbnail) {
     return ImportableContact(
       sourceId: c.id,
       displayName: c.displayName,
-      phones: c.phones.map((p) => p.number).where((s) => s.isNotEmpty).toList(growable: false),
-      emails: c.emails.map((e) => e.address).where((s) => s.isNotEmpty).toList(growable: false),
-      birthday: birthday,
-      jobTitle: orgTitle.isEmpty ? null : orgTitle,
-      thumbnail: c.thumbnail,
+      phones: c.phones
+          .map((p) => p.number)
+          .where((s) => s.isNotEmpty)
+          .toList(growable: false),
+      emails: c.emails
+          .map((e) => e.address)
+          .where((s) => s.isNotEmpty)
+          .toList(growable: false),
+      birthday: null,
+      jobTitle: c.organization?.jobDescription.isNotEmpty == true
+          ? c.organization!.jobDescription
+          : null,
+      thumbnail: thumbnail,
     );
   }
 }

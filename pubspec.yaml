@@ -58,9 +58,14 @@ dependencies:
 
   # URL launcher for nudge actions (phone, SMS, email)
   url_launcher: ^6.3.1
+  fast_contacts: ^5.0.1
+  permission_handler: ^12.0.1
 
   # Native contacts access for import (iOS/Android)
-  flutter_contacts: ^1.1.9+2
+  # TEMPORARILY DISABLED — v1.1.9+2 SIGTRAPs on iOS 26 at startup; v2.0.2 has a
+  # Swift/ObjC module-definition conflict. Tracked in bd issue kin-* (filed
+  # after verifying app works without it).
+  # flutter_contacts: ^2.0.2
 
 dev_dependencies:
   flutter_test:

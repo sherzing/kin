@@ -76,7 +76,11 @@ class _ImportSourceScreenState extends ConsumerState<ImportSourceScreen> {
                   title: const Text('vCard file'),
                   subtitle: const Text('Coming soon'),
                 ),
-                if (_deniedStatus != null) _DeniedBanner(status: _deniedStatus!),
+                if (_deniedStatus != null)
+                  _DeniedBanner(
+                    status: _deniedStatus!,
+                    service: ref.read(contactImportServiceProvider),
+                  ),
                 if (loaded.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -92,8 +96,9 @@ class _ImportSourceScreenState extends ConsumerState<ImportSourceScreen> {
 }
 
 class _DeniedBanner extends StatelessWidget {
-  const _DeniedBanner({required this.status});
+  const _DeniedBanner({required this.status, required this.service});
   final ContactPermissionStatus status;
+  final ContactImportService service;
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +114,9 @@ class _DeniedBanner extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () {
-              // Opening iOS Settings requires url_launcher with app-settings:
-              // scheme. Wiring that up is left to a follow-up; the button
-              // surface is here so users know how to recover.
+              if (service is FlutterContactImportService) {
+                (service as FlutterContactImportService).openPlatformSettings();
+              }
             },
             child: const Text('Open Settings'),
           ),
