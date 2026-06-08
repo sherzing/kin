@@ -188,3 +188,123 @@ A starting set (would become beads issues), in rough priority:
 ---
 
 *Open questions for the product owner: (1) Is the target user the mass-market "good friend" or the high-touch networker? That choice tips the weight between A/C and B. (2) Is monetization expected, and if so is it the premium "Second Brain" (B) or the privacy "Vault" (E)? (3) How aggressive may nudges be before they feel like the guilt we're trying to remove?*
+
+---
+
+# Part II — Chosen direction: **The Ritual, fed by Memory and Capture**
+
+> **Decision (2026-06-08):** Build **A (The Ritual)** as the product's spine.
+> **B (Second Brain)** and **C (Ambient Capture)** are not separate later phases — they
+> are the two things that make the daily ritual *worth doing*. The ritual captures
+> **last conversations** (recall) and surfaces **new topics you've been meaning to raise**
+> (capture). D (Mirror) and E (Vault) remain deferred.
+
+## 6. The core idea: the ritual is a loop, and the loop already has a hinge
+
+The mistake would be to treat A, B, and C as three features bolted together. They're one loop — and the data model *already contains its hinge*: the `is_preparation` flag on interactions.
+
+- **Reflection** notes (`is_preparation = false`) = *what we last talked about* → this is **B (recall)**.
+- **Prep** notes (`is_preparation = true`) = *what I want to bring up next time* → this is **C (capture)**.
+- The **deck card** is where these two meet at the right moment → this is **A (the ritual)**.
+
+So the product isn't "a deck, plus reminders, plus notes." It's a single habit loop:
+
+```
+        ┌─────────────────────────────────────────────────────┐
+        │                                                       │
+        ▼                                                       │
+  (A) NUDGE ──────► OPEN DECK ──────► CONTACT CARD = a BRIEF    │
+  "3 people today"   today's few      ┌─────────────────────┐  │
+                                      │ • last time we spoke │  │  (B) recall
+                                      │   about <X>          │  │
+                                      │ • you wanted to ask  │  │  (C) surfaced
+                                      │   about <Y>          │  │
+                                      │ • 18 days since      │  │
+                                      └─────────────────────┘  │
+                                              │                 │
+                              REACH OUT (nudge → WhatsApp/call)  │
+                                              │                 │
+                                       "did you reach them?"     │  (C) auto-log
+                                              │                 │
+                                    REFLECT (what we discussed)  │  (B) next time's recall
+                                              │                 │
+                                              └─────────────────┘
+                                                                │
+  ...and between rituals, a thought pops up:                    │
+  "oh, I should ask Dad about his knee" ──► SHARE-SHEET / QUICK ADD ──► becomes a PREP note
+                                                                         waiting on his next card
+```
+
+Every loop makes the next loop richer. The first time you open someone's card it's thin; after a few cycles it's a living memory of the relationship. **That compounding is the product.**
+
+## 7. What each strand contributes (and why it's here, not later)
+
+### A — The Ritual (the spine)
+The job: make the app *reach out*, and make the daily task small and finishable.
+- **Local notifications** — the missing keystone. One daily nudge ("Your deck is ready — 3 people today"), time-of-day configurable, plus birthday-morning alerts (the `birthday` field exists and is currently unused).
+- **A clearable deck** — cap the daily load (e.g. "today's 5") so *Time to Delight* stays low and the deck is always finishable. Confetti/empty-state already reward the clear.
+- **Forgiving streaks** — "12 days of staying connected," but a missed day is "welcome back," never a reset-to-zero shame mechanic. (This is our answer to open question #3: **gentle means forgiving, opt-in, and never guilt-inducing.** A nudge that makes you feel bad is a bug.)
+- **Weekly recap** — "You reconnected with 8 people this week" — a positive reinforcement beat.
+
+### B — Memory feeding the ritual (recall at the moment of contact)
+The job: when a card surfaces, you should *already know what matters* before you reach out.
+- **The brief card** — the deck card (and contact detail) lead with: last interaction + its topic, days since contact, upcoming birthday. This is **B's beachhead** and the single highest-value addition after notifications.
+- **Open topics** — unresolved prep notes ("things I wanted to bring up") shown front-and-centre on the card, so the ritual *uses* what C captured.
+- **Render the markdown** — notes are stored as markdown but shown largely as plain text today; render them so the recall is actually readable.
+
+### C — Capture feeding the ritual (new topics, with near-zero friction)
+The job: a thought about someone should reach their card without making you "do data entry."
+- **Quick "add a topic"** — from a contact (and from the deck card), jot "ask about her new job" → stored as a prep note that resurfaces on the next ritual. This is the everyday capture path.
+- **Share-sheet inbound** — share a text/photo/link from any app into Kin, attach to a contact as prep or reflection. The thought lands where it belongs without leaving the app you're in.
+- **"Did you reach them?" return prompt** — the nudge already opens WhatsApp/iMessage (outbound); on return, ask once and auto-log the touch. Closes the loop the spec opened but never finished.
+- **Wire the existing "Add Note" after quick-log** (`swipeable_deck_card.dart:177`, kin-61v) — today the snackbar action is a dead end; make swipe-right-then-elaborate a real capture path.
+
+## 8. Phased roadmap
+
+Each phase is shippable and leaves the app better than before. The ordering follows the loop: first make it *reach* you (A), then make the moment *worth it* (B), then make feeding it *frictionless* (C), then *reinforce* the habit (A again).
+
+**Phase 1 — Make it reach you (A core).** *The fatal-flaw fix.*
+- `flutter_local_notifications` foundation; daily deck reminder at a configurable time.
+- Birthday-morning alerts (uses existing `birthday` field).
+- Deck daily-cap setting.
+- *Done = the app can run a daily habit without the user remembering to open it.*
+
+**Phase 2 — Make the moment worth it (B).** *Recall at point of contact.*
+- Brief card: last interaction + topic + days-since + birthday, on deck card and detail.
+- Surface open/unresolved prep notes on the card.
+- Render stored markdown in detail/timeline views.
+- *Done = opening a card tells you what to say before you reach out.*
+
+**Phase 3 — Make feeding it frictionless (C).** *Zero-friction capture.*
+- Quick "add a topic" (prep note) from contact + deck card.
+- Wire "Add Note" after quick-log (kin-61v).
+- "Did you reach them?" return prompt after a nudge → auto-log.
+- Share-sheet inbound capture.
+- *Done = a passing thought about someone reliably ends up on their next card.*
+
+**Phase 4 — Reinforce the habit (A polish).** *Stickiness.*
+- Forgiving streaks; weekly "you reconnected with N people" recap.
+- Snooze/nudge tone pass for warmth.
+- *Done = the ritual feels rewarding, never nagging.*
+
+**Later (unchanged):** D (Mirror — drift detection, circle balance, monthly report) and E (Vault — export/backup, then E2E sync). Pulled forward only if the open questions below push us there.
+
+## 9. Success metrics (how we know "better" happened)
+
+- **D1/D7/D30 ritual retention** — % of days a notified user opens the deck. *The* number for a habit product.
+- **Deck clear rate** — % of surfaced decks fully cleared. Proxy for "right-sized and worth doing."
+- **Time to Delight** — median seconds from open to deck-clear (PRD's own metric).
+- **Capture rate** — prep notes created *between* rituals (the C loop working).
+- **Brief richness** — % of surfaced cards that show ≥1 prior interaction or open topic (the B compounding working).
+- **Nudge health (guardrail)** — notification opt-out / disable rate. If this climbs, "gentle" has become "nagging" — back off.
+
+## 10. Open questions — updated
+
+- **Resolved by this decision:**
+  - *Direction:* A spine, B + C feeding it; D/E deferred.
+  - *Nudge philosophy (was Q3):* gentle = forgiving, opt-in, positively framed; the opt-out rate is the guardrail.
+- **Still open:**
+  1. **Target user** — mass-market "good friend" vs. high-touch networker. Current plan suits the mass-market case; a networker focus would deepen B sooner and raise the deck cap.
+  2. **Monetization** — none vs. premium "Second Brain" (B) vs. "Vault" (E). Affects how far B/E get pushed.
+  3. **Platform priority** — iOS-first constrains some C capture paths (call-log); confirm before scoping Phase 3.
+  4. **Notification cadence default** — one fixed daily time, or adaptive to when the user usually engages? (Start simple: one configurable time.)

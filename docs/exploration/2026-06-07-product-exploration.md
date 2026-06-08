@@ -9,7 +9,7 @@
 > This file is the messier, fuller working log behind it.
 
 **Started:** 2026-06-07
-**Status:** Exploration open — directions proposed, no direction chosen yet, nothing committed.
+**Status:** **Direction chosen (2026-06-08): A (Ritual) as spine, fed by B (recall) + C (capture). D/E deferred.** See §5 session 2 and `PRODUCT_BRIEF.md` Part II.
 
 ---
 
@@ -98,7 +98,14 @@ D (Mirror)  → makes it pay off over time
 E (Vault)   → makes it safe to keep doing forever
 ```
 
-### Current recommendation (NOT yet ratified)
+### ✅ Decision (2026-06-08): A spine, B + C feeding it
+Ratified by product owner. **A (Ritual)** is the spine; **B (recall of last conversations)**
+and **C (capture of new topics)** are what make the ritual worth doing, not separate later
+phases. D/E deferred. The hinge is the existing `is_preparation` flag: reflection notes = B,
+prep notes = C, the deck card = A. Full development in `PRODUCT_BRIEF.md` Part II
+(core loop, per-strand contributions, 4-phase roadmap, success metrics).
+
+### Prior recommendation (now ratified, kept for history)
 Lead **A → C → B**, layer D and E later.
 - **A first:** spec-mandated, ~80% built, fixes the fatal flaw with least effort.
 - **C next:** A creates the occasion to log; C removes the friction.
@@ -128,6 +135,20 @@ Lead **A → C → B**, layer D and E later.
   2. If A is chosen → spike `flutter_local_notifications`: daily deck reminder + birthday alerts (birthday field already exists, unused).
   3. File directions as beads epics (`bd create`) once one or two are chosen.
   4. Decide whether to commit/push `PRODUCT_BRIEF.md` + this file (CLAUDE.md mandates push at session end — currently NOT done, by request, pending review).
+
+### 2026-06-08 — Session 2 (direction chosen)
+- **Product owner chose Direction A** as the spine, with **B and C feeding it** — the ritual
+  should surface *last conversations* (B) and *new topics you've been meaning to raise* (C).
+- Key framing locked: A/B/C are **one loop**, not three features. Hinge = existing
+  `is_preparation` flag (reflection = B recall, prep = C capture, deck card = A ritual).
+- Extended `PRODUCT_BRIEF.md` with **Part II**: core-loop diagram, per-strand contributions,
+  4-phase roadmap (A core → B recall → C capture → A reinforce), success metrics, updated Qs.
+- Resolved open Q3 (nudge philosophy): gentle = forgiving/opt-in/positive; opt-out rate is the guardrail.
+- Still open: target user (mass vs networker), monetization, platform priority, notification cadence default.
+- **Next-step options (pick up here):**
+  1. File Direction-A work as beads epics/issues — Phase 1 first (`flutter_local_notifications` foundation, birthday alerts, deck cap).
+  2. Answer remaining open questions (target user / monetization / platform) to finalize Phase 3 scope.
+  3. Begin Phase 1 implementation (TDD per CLAUDE.md) once issues are filed.
 
 ---
 
